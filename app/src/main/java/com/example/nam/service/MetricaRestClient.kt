@@ -3,6 +3,7 @@ package com.example.nam.service
 import android.util.Log
 import com.example.nam.MainActivity
 import com.example.nam.storage.dto.MetricaCounterDto
+import com.example.nam.storage.dto.MetricaCounterInfoDto
 import com.example.nam.storage.dto.MetricaCounterResponseDto
 import com.google.gson.Gson
 import com.google.gson.reflect.TypeToken
@@ -27,7 +28,7 @@ class MetricaRestClient {
         makeCreateCounterRequest(metricaCounterDto, handleResponse, handleError)
     }
 
-    fun getAllCountersInfo(handleResponse: (List<MetricaCounterResponseDto>) -> Unit, handleError: (Any) -> Unit) {
+    fun getAllCountersInfo(handleResponse: (MetricaCounterInfoDto) -> Unit, handleError: (Any) -> Unit) {
         makeGetAllCountersRequest(handleResponse, handleError)
     }
 
@@ -43,7 +44,7 @@ class MetricaRestClient {
         val request = Request.Builder()
             .url(COUNTERS_REQUEST_URL)
             .method("POST", body)
-            .addHeader("Authorization", "OAuth ${MainActivity.metricaToken}")
+            .addHeader("Authorization", "Bearer ${MainActivity.metricaToken}")
             .build()
 
         client.newCall(request).enqueue(object : Callback {
@@ -62,7 +63,7 @@ class MetricaRestClient {
 
         val request = Request.Builder()
             .url(url)
-            .addHeader("Authorization", "OAuth ${MainActivity.metricaToken}")
+            .addHeader("Authorization", "Bearer ${MainActivity.metricaToken}")
             .build()
 
         client.newCall(request).enqueue(object : Callback {
@@ -77,20 +78,25 @@ class MetricaRestClient {
         })
     }
 
-    private fun makeGetAllCountersRequest(handleResponse: (responseBody: List<MetricaCounterResponseDto>) -> Unit, handleError: (exception: IOException) -> Unit) {
+    private fun makeGetAllCountersRequest(handleResponse: (responseBody: MetricaCounterInfoDto) -> Unit, handleError: (exception: IOException) -> Unit) {
         val client = OkHttpClient()
 
         val request = Request.Builder()
             .url(COUNTERS_REQUEST_URL)
-            .addHeader("Authorization", "OAuth ${MainActivity.metricaToken}")
+            .addHeader("Authorization", "Bearer ${MainActivity.metricaToken}")
             .build()
 
         client.newCall(request).enqueue(object : Callback {
             override fun onResponse(call: Call, response: Response) {
                 val responseBody = response.body?.string()
-                val type = object : TypeToken<List<MetricaCounterResponseDto>>() {}.type
-                handleResponse(Gson().fromJson(responseBody, type))
+                val metricaCounterInfoDto = Gson().fromJson(responseBody, MetricaCounterInfoDto::class.java)
+                if (metricaCounterInfoDto.counters == null) {
+                    handleResponse(MetricaCounterInfoDto(0, listOf()))
+                } else {
+                    handleResponse(metricaCounterInfoDto)
+                }
             }
+
             override fun onFailure(call: Call, e: IOException) {
                 Log.w(YANDEX_METRICA_TAG, "Произошла ошибка запроса на создание счётчика! Подробности: ${e.message}")
                 handleError(e)

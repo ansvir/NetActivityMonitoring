@@ -1,25 +1,18 @@
-package com.example.nam.screen
+package com.example.nam.storage
 
 import android.util.Log
-import androidx.lifecycle.ViewModel
-import androidx.lifecycle.ViewModelProvider
 import com.example.nam.service.MetricaRestClient
 import com.example.nam.service.MetricaRestClient.Companion.YANDEX_METRICA_TAG
-import com.example.nam.storage.CacheRepository
-import com.example.nam.storage.WebsiteRepository
 import com.example.nam.storage.dto.MetricaCounterDto
 import com.example.nam.storage.dto.MetricaCounterRequestDto
 import com.example.nam.storage.dto.Setting
 import com.example.nam.storage.dto.Site
 import com.example.nam.storage.dto.Website
-import com.google.gson.Gson
 
-class MainViewModel(websitesRepository: WebsiteRepository) : ViewModel() {
-
-    private var websiteRepository = websitesRepository
+object WebsiteService {
 
     fun editWebsite(website: Website) {
-        this.websiteRepository.editById(website)
+        // todo
     }
 
     fun addWebsite(website: Website) {
@@ -31,7 +24,7 @@ class MainViewModel(websitesRepository: WebsiteRepository) : ViewModel() {
                 )
             ),
             {
-                this.websiteRepository.save(website)
+                WebsiteRepository.save(website)
                 Log.d(YANDEX_METRICA_TAG, "Счетчик успешно создан")
             },
             {
@@ -42,10 +35,32 @@ class MainViewModel(websitesRepository: WebsiteRepository) : ViewModel() {
     fun getAllWebsites() {
         MetricaRestClient().getAllCountersInfo({ counters ->
             val websites = ArrayList<Website>()
-            counters.map {
-                websites.plus(websiteRepository.findByCounterId(it.id.toLong()))
+            counters.counters?.map {
+                if (it.site2 == null) {
+                    websites.plus(Website(null, it.id.toLong(), it.activity_status.toInt()))
+                } else {
+                    websites.plus(Website(it.site2.site, it.id.toLong(), it.activity_status.toInt()))
+                }
             }
-            CacheRepository.put(CacheRepository.CacheType.WEBSITES, Gson().toJson(websites))
+        },
+            {
+                CacheRepository.put(
+                    CacheRepository.CacheType.NOTIFICATION,
+                    it.toString()
+                )
+            })
+    }
+
+    fun getByCounterId(counterId: Long) {
+        MetricaRestClient().getCounterInfo(counterId, {
+            val found = WebsiteRepository.findByCounterId(counterId)
+            if (found != null) {
+                if (it.site2 != null) {
+                    found.name = it.site2.site
+                }
+                found.activity = it.activity_status.toInt()
+                WebsiteRepository.edit(found)
+            }
         },
             {
                 CacheRepository.put(
@@ -62,13 +77,4 @@ class MainViewModel(websitesRepository: WebsiteRepository) : ViewModel() {
         )
     }
 
-    class MainViewModelFactory : ViewModelProvider.Factory {
-        @Suppress("UNCHECKED_CAST")
-        override fun <T : ViewModel> create(modelClass: Class<T>): T {
-            if (modelClass.isAssignableFrom(MainViewModel::class.java)) {
-                return MainViewModel(WebsiteRepository()) as T
-            }
-            throw IllegalArgumentException("Unknown ViewModel class")
-        }
-    }
 }

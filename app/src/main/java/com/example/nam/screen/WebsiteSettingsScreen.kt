@@ -21,6 +21,7 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
@@ -36,14 +37,12 @@ import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.text.input.TextFieldValue
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.Dialog
 import com.example.nam.R
-import com.example.nam.storage.CacheRepository
-import com.example.nam.storage.dto.MetricaCounterResponseDto
+import com.example.nam.storage.WebsiteRepository
 import com.example.nam.storage.dto.Website
-import com.google.gson.Gson
-import com.google.gson.reflect.TypeToken
 
 @Composable
 fun WebsiteSettingsScreen(
@@ -51,13 +50,9 @@ fun WebsiteSettingsScreen(
     onAddWebsite: (website: Website) -> Unit,
     onNavUp: () -> Unit
 ) {
-    val websitesJson = CacheRepository.get(CacheRepository.CacheType.WEBSITES)
-    val type = object : TypeToken<List<Website>>() {}.type
-    val websites = Gson().fromJson<List<Website>>(websitesJson, type)
-
     val showAddDialog = remember { mutableStateOf(false) }
     val showEditDialog = remember { mutableStateOf(false) }
-    val currentWebsite = remember { mutableStateOf(websites.firstOrNull()) }
+    val currentWebsite = remember { mutableStateOf(Website.createEmpty()) }
 
     Column(modifier = Modifier.padding(16.dp)) {
         Row(
@@ -84,13 +79,13 @@ fun WebsiteSettingsScreen(
                 Text(text = stringResource(id = R.string.add_new))
             }
         }
-        websites?.forEach { website ->
+        WebsiteRepository.find().forEach { website ->
             Row(
                 modifier = Modifier.fillMaxWidth(),
                 horizontalArrangement = Arrangement.SpaceBetween,
                 verticalAlignment = Alignment.CenterVertically
             ) {
-                Text(text = website.name)
+                website.name?.let { Text(text = it) }
                 Button(
                     onClick = { currentWebsite.value = website },
                     shape = RoundedCornerShape(0.dp)
@@ -109,10 +104,10 @@ fun WebsiteSettingsScreen(
                     showAddDialog.value = false
                 }
             }
-            if (showEditDialog.value && currentWebsite.value != null) {
+            if (showEditDialog.value) {
                 showAddDialog.value = false
                 EditSiteDialog(
-                    website = currentWebsite.value!!,
+                    website = currentWebsite.value,
                     onEditWebsite = onEditWebsite
                 ) {
                     showEditDialog.value = false
@@ -124,27 +119,34 @@ fun WebsiteSettingsScreen(
 
 @Composable
 fun AddSiteDialog(onAddWebsite: (website: Website) -> Unit, onDismissRequest: () -> Unit) {
-    val websiteCopy = remember { mutableStateOf(Website(null, "", -1)) }
+    val nameTextField = remember { mutableStateOf(TextFieldValue("")) }
+    val counterIdTextField = remember { mutableStateOf(TextFieldValue("")) }
 
     Dialog(onDismissRequest = { onDismissRequest() }) {
         Card(
             modifier = Modifier
                 .fillMaxWidth()
-                .height(200.dp)
+                .fillMaxHeight()
                 .padding(16.dp),
             shape = RoundedCornerShape(0.dp),
         ) {
             TextField(
-                value = websiteCopy.value.name,
+                value = nameTextField.value,
                 onValueChange = {
-                    websiteCopy.value.name = it
+                    nameTextField.value = it
+                },
+                placeholder = {
+                    Text(text = stringResource(id = R.string.website_domain_name))
                 }
             )
             Spacer(modifier = Modifier.height(8.dp))
             TextField(
-                value = websiteCopy.value.counterId.toString(),
+                value = counterIdTextField.value,
                 onValueChange = {
-                    websiteCopy.value.counterId = it.toLong()
+                    counterIdTextField.value = it
+                },
+                placeholder = {
+                    Text(text = stringResource(id = R.string.website_counter_id))
                 }
             )
             Spacer(modifier = Modifier.height(8.dp))
@@ -159,7 +161,10 @@ fun AddSiteDialog(onAddWebsite: (website: Website) -> Unit, onDismissRequest: ()
                 )
             }
             Button(
-                onClick = { onAddWebsite(websiteCopy.value) },
+                onClick = {
+                    onAddWebsite(Website(nameTextField.value.text, counterIdTextField.value.text.toLong(), 0))
+                    onDismissRequest()
+                          },
                 modifier = Modifier
                     .fillMaxWidth()
                     .padding(vertical = 16.dp)
@@ -175,26 +180,28 @@ fun AddSiteDialog(onAddWebsite: (website: Website) -> Unit, onDismissRequest: ()
 @Composable
 fun EditSiteDialog(website: Website, onEditWebsite: (website: Website) -> Unit, onDismissRequest: () -> Unit) {
     val websiteCopy = remember { mutableStateOf(website) }
+    val nameTextField = remember { mutableStateOf(TextFieldValue("")) }
+    val counterIdTextField = remember { mutableStateOf(TextFieldValue("")) }
 
     Dialog(onDismissRequest = { onDismissRequest() }) {
         Card(
             modifier = Modifier
                 .fillMaxWidth()
-                .height(200.dp)
+                .fillMaxHeight()
                 .padding(16.dp),
             shape = RoundedCornerShape(0.dp),
         ) {
             TextField(
-                value = websiteCopy.value.name,
+                value = nameTextField.value,
                 onValueChange = {
-                    websiteCopy.value.name = it
+                    nameTextField.value = it
                 }
             )
             Spacer(modifier = Modifier.height(8.dp))
             TextField(
-                value = websiteCopy.value.counterId.toString(),
+                value = counterIdTextField.value,
                 onValueChange = {
-                    websiteCopy.value.counterId = it.toLong()
+                    counterIdTextField.value = it
                 }
             )
             Spacer(modifier = Modifier.height(8.dp))
@@ -209,7 +216,10 @@ fun EditSiteDialog(website: Website, onEditWebsite: (website: Website) -> Unit, 
                 )
             }
             Button(
-                onClick = { onEditWebsite(websiteCopy.value) },
+                onClick = {
+                    websiteCopy.value.name = nameTextField.value.text
+                    websiteCopy.value.counterId = counterIdTextField.value.text.toLong()
+                    onEditWebsite(websiteCopy.value) },
                 modifier = Modifier
                     .fillMaxWidth()
                     .padding(vertical = 16.dp)

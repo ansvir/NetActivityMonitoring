@@ -4,13 +4,13 @@ import com.example.nam.MainActivity
 import com.example.nam.storage.dto.Website
 import com.google.gson.Gson
 
-class WebsiteRepository {
+object WebsiteRepository {
 
     private var preferencesManager: PreferencesManager =
         PreferencesManager(MainActivity.self.baseContext, "WEBSITES")
 
-    fun findById(id: Int): Website? {
-        val found = preferencesManager.getDataByKey(id.toString()) ?: return null
+    fun findByName(name: String): Website? {
+        val found = preferencesManager.getDataByKey(name) ?: return null
         return fromJson(found)
     }
 
@@ -23,24 +23,30 @@ class WebsiteRepository {
     }
 
     fun save(website: Website) {
-        if (website.id == null) {
-            website.id = (find().sortedBy { website.id }.last().id!!.plus(1))
+        if (website.name?.let { findByName(it) } == null) {
+            website.name?.let { preferencesManager.saveData(it, toJson(website)) }
+        } else {
+            CacheRepository.put(CacheRepository.CacheType.NOTIFICATION, "Сайт с таким именем уже добавлен!")
         }
-        preferencesManager.saveData(website.id.toString(), toJson(website))
+
     }
 
-    fun editById(website: Website) {
-        val found = preferencesManager.getData().find { it.id == website.id }
+    fun edit(website: Website) {
+        val found = preferencesManager.getData().find { it.name == website.name }
         if (found == null) {
             return
         }
         found.name = website.name
         found.counterId = website.counterId
-        preferencesManager.saveData(found.id.toString(), toJson(found))
+        found.name?.let { preferencesManager.saveData(it, toJson(found)) }
     }
 
     fun delete(website: Website) {
-        preferencesManager.deleteData(website.id.toString())
+        website.name?.let { preferencesManager.deleteData(it) }
+    }
+
+    fun deleteAll() {
+        preferencesManager.deleteData()
     }
 
     private fun fromJson(json: String): Website {

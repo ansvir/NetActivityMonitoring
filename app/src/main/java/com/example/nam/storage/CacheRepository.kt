@@ -1,5 +1,6 @@
 package com.example.nam.storage
 
+import com.google.gson.Gson
 import java.util.concurrent.ConcurrentHashMap
 
 object CacheRepository {

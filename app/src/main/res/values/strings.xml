@@ -27,6 +27,8 @@
     <string name="websites_settings">Настройки сайтов</string>
     <string name="email_settings">Настройки e-mail</string>
     <string name="send_to_email">Отправить на e-mail</string>
+    <string name="website_domain_name">Доменное имя сайта</string>
+    <string name="website_counter_id">Номер счетчика</string>
     <string name="email">Email</string>
     <string name="password">Password</string>
     <string name="confirm_password">Confirm password</string>

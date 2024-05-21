@@ -3,20 +3,22 @@
 package com.example.nam.screen
 
 import androidx.compose.runtime.Composable
-import androidx.lifecycle.viewmodel.compose.viewModel
+import com.example.nam.storage.WebsiteService
+import com.example.nam.storage.WebsiteRepository
 
 @Composable
 fun WebsitesSettingsRoute(
     onNavUp: () -> Unit,
 ) {
-    val mainViewModel: MainViewModel = viewModel(factory = MainViewModel.MainViewModelFactory())
-    mainViewModel.getAllWebsites()
+    WebsiteService.getAllWebsites()
     WebsiteSettingsScreen(
         onEditWebsite = {
-            mainViewModel.editWebsite(it)
+            WebsiteRepository.edit(it)
+            WebsiteService.editWebsite(it)
         },
         onAddWebsite = {
-            mainViewModel.addWebsite(it)
+            WebsiteRepository.save(it)
+            WebsiteService.addWebsite(it)
         },
         onNavUp = onNavUp
     )

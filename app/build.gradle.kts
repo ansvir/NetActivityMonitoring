@@ -13,7 +13,7 @@ android {
         targetSdk = libs.versions.targetSdk.get().toInt()
         versionCode = 1
         versionName = "1.0"
-        manifestPlaceholders["YANDEX_CLIENT_ID"] = "e2ac4daddb18440292dc7d99a83e907e"
+        manifestPlaceholders["YANDEX_CLIENT_ID"] = "d5741751c3c049269ecea60c8acbd42c"
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
         vectorDrawables {
             useSupportLibrary = true

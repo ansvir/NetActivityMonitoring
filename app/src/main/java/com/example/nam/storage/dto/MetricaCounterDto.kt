@@ -4,11 +4,11 @@ import com.google.gson.annotations.SerializedName
 
 data class MetricaCounterDto(val counter: MetricaCounterRequestDto)
 
-data class MetricaCounterInfoDto(val counter: MetricaCounterResponseDto)
+data class MetricaCounterInfoDto(val rows: Int, val counters: List<MetricaCounterResponseDto>?)
 
 data class MetricaCounterRequestDto(
-    val name: String,
-    val site2: Site,
+    val name: String?,
+    val site2: Site?,
     val gdpr_agreement_accepted: Boolean = true,
     val mirrors2: List<Site> = listOf(),
     val goals: List<String> = listOf(),
@@ -36,10 +36,12 @@ data class MetricaCounterResponseDto(
     val id: Int,
     @SerializedName("activity_status")
     val activity_status: String,
+    @SerializedName("site2")
+    val site2: Site?
 )
 
 data class Site(
-    val site: String
+    val site: String?
 )
 
 data class Filter(

@@ -32,4 +32,10 @@ class PreferencesManager(context: Context, storageName: String) {
         editor.apply()
     }
 
+    fun deleteData() {
+        val editor = sharedPreferences.edit()
+        editor.clear()
+        editor.apply()
+    }
+
 }

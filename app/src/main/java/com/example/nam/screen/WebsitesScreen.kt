@@ -17,41 +17,38 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import com.example.nam.R
 import com.example.nam.storage.CacheRepository
-import com.example.nam.storage.dto.MetricaCounterResponseDto
+import com.example.nam.storage.WebsiteRepository
+import com.example.nam.storage.WebsiteService
 import com.example.nam.storage.dto.Website
 import com.google.gson.Gson
 import com.google.gson.reflect.TypeToken
 
 @Composable
 fun WebsitesScreen() {
-
-    val websitesJson = CacheRepository.get(CacheRepository.CacheType.WEBSITES)
-    val type = object : TypeToken<List<Website>>() {}.type
-    val websites = Gson().fromJson<List<Website>>(websitesJson, type)
-
+    val allWebsites = WebsiteRepository.find()
     Column(modifier = Modifier.padding(16.dp)) {
-        websites?.forEach { website ->
+        allWebsites.forEach { website ->
             Row(
                 modifier = Modifier.fillMaxWidth(),
                 horizontalArrangement = Arrangement.SpaceBetween,
                 verticalAlignment = Alignment.CenterVertically
             ) {
-                Text(text = website.name)
+                website.name?.let { Text(text = it) }
                 Button(
-                    onClick = { },
+                    onClick = { WebsiteService.getByCounterId(website.counterId) },
                     shape = RoundedCornerShape(0.dp)
                 ) {
                     Text(text = stringResource(id = R.string.retrieve))
                 }
             }
             Spacer(modifier = Modifier.height(8.dp))
-            Text(text = website.counterId.toString())
+            Text(text = website.activity.toString())
             Spacer(modifier = Modifier.height(16.dp))
         }
 
         Button(
             modifier = Modifier.align(Alignment.CenterHorizontally),
-            onClick = { sendWebsitesToEmail(websites) },
+            onClick = { sendWebsitesToEmail(allWebsites) },
             shape = RoundedCornerShape(0.dp)
         ) {
             Text(text = stringResource(id = R.string.send_to_email))
