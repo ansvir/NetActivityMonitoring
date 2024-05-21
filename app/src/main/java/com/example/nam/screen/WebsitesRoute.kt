@@ -7,8 +7,5 @@ import androidx.lifecycle.viewmodel.compose.viewModel
 
 @Composable
 fun WebsitesRoute() {
-    val mainViewModel: MainViewModel = viewModel(factory = MainViewModel.MainViewModelFactory())
-    WebsitesScreen(
-        mainViewModel.getAllWebsites()
-    )
+    WebsitesScreen()
 }

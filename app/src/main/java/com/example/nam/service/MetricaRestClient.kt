@@ -6,12 +6,6 @@ import com.example.nam.storage.dto.MetricaCounterDto
 import com.example.nam.storage.dto.MetricaCounterResponseDto
 import com.google.gson.Gson
 import com.google.gson.reflect.TypeToken
-import com.yandex.authsdk.YandexAuthException
-import com.yandex.authsdk.YandexAuthLoginOptions
-import com.yandex.authsdk.YandexAuthOptions
-import com.yandex.authsdk.YandexAuthResult
-import com.yandex.authsdk.YandexAuthSdk
-import com.yandex.authsdk.YandexAuthToken
 import okhttp3.Call
 import okhttp3.Callback
 import okhttp3.MediaType.Companion.toMediaType
@@ -29,50 +23,16 @@ class MetricaRestClient {
         const val COUNTER_REQUEST_URL = "https://api-metrika.yandex.net/management/v1/counter/"
     }
 
-    private fun makeAuthenticatedRequest(handleResponse: (YandexAuthToken) -> Unit, handleErrorResponse: (YandexAuthException) -> Unit) {
-        val sdk = YandexAuthSdk.create(YandexAuthOptions(MainActivity.self.baseContext))
-        val launcher = MainActivity.self.registerForActivityResult(sdk.contract) { result ->
-            when (result) {
-                is YandexAuthResult.Success -> {
-                    Log.d(YANDEX_METRICA_TAG, "Подключение успешно")
-                    handleResponse(result.token)
-                }
-                is YandexAuthResult.Failure -> {
-                    Log.e(YANDEX_METRICA_TAG, "Ошибка подключения! Подробности: ${result.exception}")
-                    handleErrorResponse(result.exception)
-                }
-                YandexAuthResult.Cancelled -> {
-                    Log.d(YANDEX_METRICA_TAG, "Запрос отменён")
-                }
-                else -> {}
-            }
-        }
-        val loginOptions = YandexAuthLoginOptions()
-        launcher.launch(loginOptions)
-    }
-
     fun createCounter(metricaCounterDto: MetricaCounterDto, handleResponse: () -> Unit, handleError: (Any) -> Unit) {
-        makeAuthenticatedRequest({
-            makeCreateCounterRequest(metricaCounterDto, handleResponse, handleError)
-        }, {
-            handleError(it)
-        })
+        makeCreateCounterRequest(metricaCounterDto, handleResponse, handleError)
     }
 
     fun getAllCountersInfo(handleResponse: (List<MetricaCounterResponseDto>) -> Unit, handleError: (Any) -> Unit) {
-        makeAuthenticatedRequest({
-            makeGetAllCountersRequest(handleResponse, handleError)
-        }, {
-            handleError(it)
-        })
+        makeGetAllCountersRequest(handleResponse, handleError)
     }
 
     fun getCounterInfo(counterId: Long, handleResponse: (MetricaCounterResponseDto) -> Unit, handleError: (Any) -> Unit) {
-        makeAuthenticatedRequest({
-            makeCounterByIdRequest(COUNTER_REQUEST_URL + "$counterId", handleResponse, handleError)
-        }, {
-            handleError(it)
-        })
+        makeCounterByIdRequest(COUNTER_REQUEST_URL + "$counterId", handleResponse, handleError)
     }
 
     private fun makeCreateCounterRequest(bodyObject: MetricaCounterDto, handleResponse: () -> Unit, handleError: (exception: IOException) -> Unit) {
@@ -83,6 +43,7 @@ class MetricaRestClient {
         val request = Request.Builder()
             .url(COUNTERS_REQUEST_URL)
             .method("POST", body)
+            .addHeader("Authorization", "OAuth ${MainActivity.metricaToken}")
             .build()
 
         client.newCall(request).enqueue(object : Callback {
@@ -101,6 +62,7 @@ class MetricaRestClient {
 
         val request = Request.Builder()
             .url(url)
+            .addHeader("Authorization", "OAuth ${MainActivity.metricaToken}")
             .build()
 
         client.newCall(request).enqueue(object : Callback {
@@ -120,6 +82,7 @@ class MetricaRestClient {
 
         val request = Request.Builder()
             .url(COUNTERS_REQUEST_URL)
+            .addHeader("Authorization", "OAuth ${MainActivity.metricaToken}")
             .build()
 
         client.newCall(request).enqueue(object : Callback {

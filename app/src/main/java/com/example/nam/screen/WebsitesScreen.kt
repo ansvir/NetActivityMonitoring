@@ -16,13 +16,21 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import com.example.nam.R
+import com.example.nam.storage.CacheRepository
+import com.example.nam.storage.dto.MetricaCounterResponseDto
 import com.example.nam.storage.dto.Website
+import com.google.gson.Gson
+import com.google.gson.reflect.TypeToken
 
 @Composable
-fun WebsitesScreen(websites: List<Website>) {
+fun WebsitesScreen() {
+
+    val websitesJson = CacheRepository.get(CacheRepository.CacheType.WEBSITES)
+    val type = object : TypeToken<List<Website>>() {}.type
+    val websites = Gson().fromJson<List<Website>>(websitesJson, type)
 
     Column(modifier = Modifier.padding(16.dp)) {
-        websites.forEach { website ->
+        websites?.forEach { website ->
             Row(
                 modifier = Modifier.fillMaxWidth(),
                 horizontalArrangement = Arrangement.SpaceBetween,

@@ -84,7 +84,7 @@ fun WebsiteSettingsScreen(
                 Text(text = stringResource(id = R.string.add_new))
             }
         }
-        websites.forEach { website ->
+        websites?.forEach { website ->
             Row(
                 modifier = Modifier.fillMaxWidth(),
                 horizontalArrangement = Arrangement.SpaceBetween,
