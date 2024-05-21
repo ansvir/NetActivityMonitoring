@@ -1,6 +1,5 @@
 package com.example.nam
 
-import android.content.Context
 import android.os.Bundle
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
@@ -10,17 +9,14 @@ import com.example.nam.theme.AppTheme
 
 class MainActivity : AppCompatActivity() {
 
-    private lateinit var _context: Context
-    private var context: Context
-        get() = _context
-        set(value) {
-            _context = value
-        }
+    companion object {
+        lateinit var self: MainActivity
+    }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         enableEdgeToEdge()
         super.onCreate(savedInstanceState)
-        this.context = baseContext
+        self = this
         setContent {
             AppTheme {
                 MainScreen()

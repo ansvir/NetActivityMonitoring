@@ -1,29 +1,58 @@
 package com.example.nam.screen
 
+import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
+import com.example.nam.service.MetricaRestClient
+import com.example.nam.service.MetricaRestClient.Companion.YANDEX_METRICA_TAG
+import com.example.nam.storage.CacheRepository
 import com.example.nam.storage.WebsiteRepository
+import com.example.nam.storage.dto.MetricaCounterDto
+import com.example.nam.storage.dto.MetricaCounterRequestDto
 import com.example.nam.storage.dto.Setting
+import com.example.nam.storage.dto.Site
 import com.example.nam.storage.dto.Website
+import com.google.gson.Gson
 
 class MainViewModel(websitesRepository: WebsiteRepository) : ViewModel() {
 
-    private var websiteRepository = websitesRepository;
+    private var websiteRepository = websitesRepository
 
     fun editWebsite(website: Website) {
-        this.websiteRepository.edit(website)
+        this.websiteRepository.editById(website)
     }
 
     fun addWebsite(website: Website) {
-        this.websiteRepository.save(website)
+        MetricaRestClient().createCounter(
+            MetricaCounterDto(
+                MetricaCounterRequestDto(
+                    name = website.name,
+                    site2 = Site(website.name)
+                )
+            ),
+            {
+                this.websiteRepository.save(website)
+                Log.d(YANDEX_METRICA_TAG, "Счетчик успешно создан")
+            },
+            {
+                CacheRepository.put(CacheRepository.CacheType.NOTIFICATION, it.toString())
+            })
     }
 
-    fun getAllSites(): List<Website> {
-        return listOf(
-            Website(1, "www.mail.ru", 1),
-            Website(2, "www.mysite.org", 2),
-            Website(3, "www.example.com", 3)
-        )
+    fun getAllWebsites() {
+        MetricaRestClient().getAllCountersInfo({ counters ->
+            val websites = ArrayList<Website>()
+            counters.map {
+                websites.plus(websiteRepository.findByCounterId(it.id.toLong()))
+            }
+            CacheRepository.put(CacheRepository.CacheType.WEBSITES, Gson().toJson(websites))
+        },
+            {
+                CacheRepository.put(
+                    CacheRepository.CacheType.NOTIFICATION,
+                    it.toString()
+                )
+            })
     }
 
     fun getAllSettings(): List<Setting> {

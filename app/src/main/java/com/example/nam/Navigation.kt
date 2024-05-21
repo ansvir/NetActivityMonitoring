@@ -118,11 +118,6 @@ fun MainLayout(navController: NavHostController) {
                 )
             }
 
-//        composable(SURVEY_RESULTS_ROUTE) {
-//            SurveyResultScreen {
-//                navController.popBackStack(WEBSITES_ROUTE, false)
-//            }
-//        }
         }
     }
 }

@@ -10,8 +10,8 @@ fun WebsitesSettingsRoute(
     onNavUp: () -> Unit,
 ) {
     val mainViewModel: MainViewModel = viewModel(factory = MainViewModel.MainViewModelFactory())
+    mainViewModel.getAllWebsites()
     WebsiteSettingsScreen(
-        websites = mainViewModel.getAllSites(),
         onEditWebsite = {
             mainViewModel.editWebsite(it)
         },

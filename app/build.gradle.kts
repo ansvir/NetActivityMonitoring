@@ -13,6 +13,7 @@ android {
         targetSdk = libs.versions.targetSdk.get().toInt()
         versionCode = 1
         versionName = "1.0"
+        manifestPlaceholders["YANDEX_CLIENT_ID"] = "e2ac4daddb18440292dc7d99a83e907e"
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
         vectorDrawables {
             useSupportLibrary = true
@@ -62,6 +63,8 @@ dependencies {
     implementation(libs.google.android.material)
 
     implementation(libs.gson)
+
+    implementation(libs.authsdk)
 
     implementation(libs.androidx.compose.foundation.layout)
     implementation(libs.androidx.compose.material3)

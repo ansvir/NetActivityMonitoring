@@ -39,15 +39,22 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.Dialog
 import com.example.nam.R
+import com.example.nam.storage.CacheRepository
+import com.example.nam.storage.dto.MetricaCounterResponseDto
 import com.example.nam.storage.dto.Website
+import com.google.gson.Gson
+import com.google.gson.reflect.TypeToken
 
 @Composable
 fun WebsiteSettingsScreen(
-    websites: List<Website>,
     onEditWebsite: (website: Website) -> Unit,
     onAddWebsite: (website: Website) -> Unit,
     onNavUp: () -> Unit
 ) {
+    val websitesJson = CacheRepository.get(CacheRepository.CacheType.WEBSITES)
+    val type = object : TypeToken<List<Website>>() {}.type
+    val websites = Gson().fromJson<List<Website>>(websitesJson, type)
+
     val showAddDialog = remember { mutableStateOf(false) }
     val showEditDialog = remember { mutableStateOf(false) }
     val currentWebsite = remember { mutableStateOf(websites.firstOrNull()) }
@@ -137,7 +144,7 @@ fun AddSiteDialog(onAddWebsite: (website: Website) -> Unit, onDismissRequest: ()
             TextField(
                 value = websiteCopy.value.counterId.toString(),
                 onValueChange = {
-                    websiteCopy.value.counterId = it.toInt()
+                    websiteCopy.value.counterId = it.toLong()
                 }
             )
             Spacer(modifier = Modifier.height(8.dp))
@@ -187,7 +194,7 @@ fun EditSiteDialog(website: Website, onEditWebsite: (website: Website) -> Unit, 
             TextField(
                 value = websiteCopy.value.counterId.toString(),
                 onValueChange = {
-                    websiteCopy.value.counterId = it.toInt()
+                    websiteCopy.value.counterId = it.toLong()
                 }
             )
             Spacer(modifier = Modifier.height(8.dp))
