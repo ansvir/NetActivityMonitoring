@@ -1,3 +1,10 @@
 package com.example.nam.storage.dto
 
-data class Setting(val id: Int, var name: String, var data: String)
+data class Setting(var id: Int?,
+                   val smtpAccount: String,
+                   val smtpAccountPassword: String,
+                   val smtpAccountDomain: String,
+                   val smtpAccountPort: Int,
+                   val smtpAccountUseSs: Boolean,
+                   val reportEmail: String,
+                   val smtpEmailFromText: String)

@@ -19,7 +19,7 @@ object WebsiteRepository {
     }
 
     fun findByCounterId(id: Long): Website? {
-        return preferencesManager.getData().find { it.counterId == id }
+        return preferencesManager.getData<Website>().find { it.counterId == id }
     }
 
     fun save(website: Website) {
@@ -35,13 +35,12 @@ object WebsiteRepository {
     }
 
     fun edit(website: Website) {
-        val found = preferencesManager.getData().find { it.name == website.name }
+        val found = preferencesManager.getData<Website>().find { it.name == website.name }
         if (found == null) {
             return
+        } else {
+            preferencesManager.saveData(website.name.toString(), toJson(website))
         }
-        found.name = website.name
-        found.counterId = website.counterId
-        found.name?.let { preferencesManager.saveData(it, toJson(found)) }
     }
 
     fun delete(website: Website) {

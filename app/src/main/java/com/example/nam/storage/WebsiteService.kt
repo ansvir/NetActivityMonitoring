@@ -71,11 +71,4 @@ object WebsiteService {
             })
     }
 
-    fun getAllSettings(): List<Setting> {
-        return listOf(
-            Setting(1, "Настройка 1", "Данные настройки"),
-            Setting(2, "Настройка 2", "Данные настройки"),
-        )
-    }
-
 }

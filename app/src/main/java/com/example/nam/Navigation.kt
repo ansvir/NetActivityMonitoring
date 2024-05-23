@@ -19,7 +19,6 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
-import androidx.navigation.NavHost
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
@@ -28,6 +27,7 @@ import com.example.nam.Destinations.EMAIL_SETTINGS
 import com.example.nam.Destinations.SETTINGS_ROUTE
 import com.example.nam.Destinations.WEBSITES_ROUTE
 import com.example.nam.Destinations.WEBSITES_SETTINGS_ROUTE
+import com.example.nam.screen.EmailSettingsScreen
 import com.example.nam.screen.SettingsScreen
 import com.example.nam.screen.WebsitesRoute
 import com.example.nam.screen.WebsitesSettingsRoute
@@ -38,7 +38,6 @@ object Destinations {
     const val SETTINGS_ROUTE = "settings"
     const val WEBSITES_SETTINGS_ROUTE = "settings/websites"
     const val EMAIL_SETTINGS = "settings/email"
-    const val EMAIL_SETTINGS_ADD = "settings/email/add"
 }
 
 @Composable
@@ -119,6 +118,10 @@ fun MainLayout(navController: NavHostController) {
                 WebsitesSettingsRoute(
                     onNavUp = navController::navigateUp,
                 )
+            }
+
+            composable(EMAIL_SETTINGS) {
+                EmailSettingsScreen(onNavUp = navController::navigateUp)
             }
 
         }

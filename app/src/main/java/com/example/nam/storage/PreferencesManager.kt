@@ -7,7 +7,7 @@ import com.google.gson.Gson
 
 class PreferencesManager(context: Context, storageName: String) {
 
-    private val sharedPreferences: SharedPreferences =
+    val sharedPreferences: SharedPreferences =
         context.getSharedPreferences(storageName, Context.MODE_PRIVATE)
 
     fun saveData(key: String, value: String) {
@@ -16,9 +16,9 @@ class PreferencesManager(context: Context, storageName: String) {
         editor.apply()
     }
 
-    fun getData(): List<Website> {
+    inline fun<reified T> getData(): List<T> {
         return sharedPreferences.all.values
-            .map { Gson().fromJson(it.toString(), Website::class.java) }
+            .map { Gson().fromJson(it.toString(), T::class.java) }
             .toCollection(ArrayList())
     }
 

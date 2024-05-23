@@ -29,6 +29,13 @@
     <string name="send_to_email">Отправить на e-mail</string>
     <string name="website_domain_name">Доменное имя сайта</string>
     <string name="website_counter_id">Номер счетчика</string>
+    <string name="smtp_account">Учетная запись SMTP-сервера</string>
+    <string name="smtp_account_password">Пароль к учетной записи SMTP-сервера</string>
+    <string name="smtp_account_domain">Адрес (доменное имя) SMTP-сервера</string>
+    <string name="smtp_account_port">SMTP-порт</string>
+    <string name="smtp_account_use_ssl">Использовать SSL/TLS</string>
+    <string name="report_email">E-mail, на который направляются отчёты</string>
+    <string name="smtp_email_from_text">Текст для поля "From" в сообщении E-mail</string>
     <string name="email">Email</string>
     <string name="password">Password</string>
     <string name="confirm_password">Confirm password</string>
