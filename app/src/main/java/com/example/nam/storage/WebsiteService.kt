@@ -42,6 +42,7 @@ object WebsiteService {
                     websites.plus(Website(it.site2.site, it.id.toLong(), it.activity_status.toInt()))
                 }
             }
+            WebsiteRepository.saveAll(websites)
         },
             {
                 CacheRepository.put(

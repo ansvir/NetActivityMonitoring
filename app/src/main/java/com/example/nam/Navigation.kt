@@ -31,6 +31,7 @@ import com.example.nam.Destinations.WEBSITES_SETTINGS_ROUTE
 import com.example.nam.screen.SettingsScreen
 import com.example.nam.screen.WebsitesRoute
 import com.example.nam.screen.WebsitesSettingsRoute
+import com.example.nam.storage.CacheRepository
 
 object Destinations {
     const val WEBSITES_ROUTE = "websites"
@@ -49,7 +50,9 @@ fun AppNavHost(
 
 @Composable
 fun MainLayout(navController: NavHostController) {
-    val notificationText by rememberSaveable { mutableStateOf("") }
+    val notification = CacheRepository.get(CacheRepository.CacheType.NOTIFICATION)
+
+    val notificationText by rememberSaveable { mutableStateOf(notification) }
 
     Column(
         modifier = Modifier
@@ -84,7 +87,7 @@ fun MainLayout(navController: NavHostController) {
             .height(48.dp)
             .padding(16.dp)
     ) {
-        Text(text = notificationText)
+        Text(text = notificationText ?: "")
     }
 
     Box(

@@ -28,7 +28,10 @@ object WebsiteRepository {
         } else {
             CacheRepository.put(CacheRepository.CacheType.NOTIFICATION, "Сайт с таким именем уже добавлен!")
         }
+    }
 
+    fun saveAll(websites: List<Website>) {
+        websites.forEach { website -> website.name?.let { preferencesManager.saveData(it, Gson().toJson(website)) } }
     }
 
     fun edit(website: Website) {
