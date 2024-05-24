@@ -20,14 +20,6 @@ object EmailRepository {
         preferencesManager.saveData(REPORT_KEY, toJson(setting))
     }
 
-    fun delete(setting: Setting) {
-        preferencesManager.deleteData(REPORT_KEY)
-    }
-
-    fun deleteAll() {
-        preferencesManager.deleteData()
-    }
-
     private fun fromJson(json: String): Setting {
         val gson = Gson()
         return gson.fromJson(json, Setting::class.java)

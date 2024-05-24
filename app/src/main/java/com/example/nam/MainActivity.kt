@@ -17,6 +17,9 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import com.example.nam.screen.MainScreen
 import com.example.nam.service.MetricaRestClient.Companion.YANDEX_METRICA_TAG
+import com.example.nam.storage.TokenRepository
+import com.example.nam.storage.WebsiteRepository
+import com.example.nam.storage.dto.YandexToken
 import com.example.nam.theme.AppTheme
 import com.yandex.authsdk.YandexAuthLoginOptions
 import com.yandex.authsdk.YandexAuthOptions
@@ -31,7 +34,6 @@ class MainActivity : AppCompatActivity() {
     private var tokenState: MutableState<TokenState> = mutableStateOf(TokenState.PENDING)
 
     companion object {
-        lateinit var metricaToken: String
         lateinit var self: MainActivity
     }
 
@@ -39,7 +41,8 @@ class MainActivity : AppCompatActivity() {
         enableEdgeToEdge()
         super.onCreate(savedInstanceState)
         self = this
-        authenticateYandexApi()
+        WebsiteRepository.deleteAll()
+        handleToken()
         setContent {
             AppTheme {
                 when (tokenState.value) {
@@ -80,7 +83,7 @@ class MainActivity : AppCompatActivity() {
                 when (result) {
                     is YandexAuthResult.Success -> {
                         Log.d(YANDEX_METRICA_TAG, "Подключение успешно");
-                        metricaToken = sdk.getJwt(result.token).replace("\n", "")
+                        TokenRepository.save(YandexToken(result.token.value, result.token.expiresIn, System.currentTimeMillis()))
                         tokenState.value = TokenState.SUCCESS
                     }
                     is YandexAuthResult.Failure -> {
@@ -97,6 +100,16 @@ class MainActivity : AppCompatActivity() {
         }
         val loginOptions = YandexAuthLoginOptions()
         launcher.launch(loginOptions)
+    }
+
+    private fun handleToken() {
+        val yandexToken = TokenRepository.find()
+        if (yandexToken == null
+            || yandexToken.createdIn + yandexToken.expiresIn * 1000L <= System.currentTimeMillis()) {
+            authenticateYandexApi()
+        } else {
+            tokenState.value = TokenState.SUCCESS
+        }
     }
 
     enum class TokenState {

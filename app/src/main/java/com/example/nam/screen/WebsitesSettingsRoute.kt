@@ -2,7 +2,7 @@ package com.example.nam.screen
 
 import androidx.compose.runtime.Composable
 import com.example.nam.storage.ErrorViewModel
-import com.example.nam.storage.WebsiteService
+import com.example.nam.service.WebsiteService
 import com.example.nam.storage.WebsiteRepository
 
 @Composable
@@ -14,12 +14,11 @@ fun WebsitesSettingsRoute(
     WebsiteSettingsScreen(
         onEditWebsite = {
             WebsiteRepository.edit(it)
-            WebsiteService.editWebsite(it)
         },
         onAddWebsite = {
-            WebsiteRepository.save(it, errorViewModel)
             WebsiteService.addWebsite(it, errorViewModel)
         },
+        errorViewModel = errorViewModel,
         onNavUp = onNavUp
     )
 }

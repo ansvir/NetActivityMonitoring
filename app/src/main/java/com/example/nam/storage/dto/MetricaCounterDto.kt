@@ -40,6 +40,11 @@ data class MetricaCounterResponseDto(
     val site2: Site?
 )
 
+data class MetricaPageViewsResponseDto(
+    @SerializedName("total_rows")
+    val totals: Long?
+)
+
 data class Site(
     val site: String?
 )

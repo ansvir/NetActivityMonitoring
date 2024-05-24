@@ -28,6 +28,8 @@ import androidx.compose.ui.text.input.TextFieldValue
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.Dialog
 import com.example.nam.R
+import com.example.nam.service.MetricaRestClient
+import com.example.nam.storage.ErrorViewModel
 import com.example.nam.storage.WebsiteRepository
 import com.example.nam.storage.dto.Website
 import com.example.nam.vaidation.DomainValidator
@@ -37,7 +39,8 @@ import com.example.nam.vaidation.IntegerValidator
 fun WebsiteSettingsScreen(
     onEditWebsite: (website: Website) -> Unit,
     onAddWebsite: (website: Website) -> Unit,
-    onNavUp: () -> Unit
+    errorViewModel: ErrorViewModel,
+    onNavUp: () -> Unit,
 ) {
     val showAddDialog = remember { mutableStateOf(false) }
     val showEditDialog = remember { mutableStateOf(false) }
@@ -90,7 +93,7 @@ fun WebsiteSettingsScreen(
         ) {
             if (showAddDialog.value) {
                 showEditDialog.value = false
-                AddSiteDialog(onAddWebsite = onAddWebsite) {
+                AddSiteDialog(onAddWebsite = onAddWebsite, errorViewModel = errorViewModel) {
                     showAddDialog.value = false
                 }
             }
@@ -108,7 +111,7 @@ fun WebsiteSettingsScreen(
 }
 
 @Composable
-fun AddSiteDialog(onAddWebsite: (website: Website) -> Unit, onDismissRequest: () -> Unit) {
+fun AddSiteDialog(onAddWebsite: (website: Website) -> Unit, errorViewModel: ErrorViewModel, onDismissRequest: () -> Unit) {
     val nameTextField = remember { mutableStateOf(TextFieldValue("")) }
     val counterIdTextField = remember { mutableStateOf(TextFieldValue("")) }
 
@@ -170,9 +173,15 @@ fun AddSiteDialog(onAddWebsite: (website: Website) -> Unit, onDismissRequest: ()
             Button(
                 enabled = isFormValid,
                 onClick = {
-                    onAddWebsite(Website(nameTextField.value.text, counterIdTextField.value.text.toLong(), 0))
-                    onDismissRequest()
-                          },
+                    MetricaRestClient().getOneWeekPageViewsByCounterId(counterIdTextField.value.text.toLong(),
+                        {
+                            onAddWebsite(Website(nameTextField.value.text, counterIdTextField.value.text.toLong(), "low", it.totals ?: 0))
+                            onDismissRequest()
+                        },
+                        {
+                            errorViewModel.setErrorMessage("Ошибка получения данных посещения сайта: $it")
+                            onDismissRequest()
+                        }) },
                 modifier = Modifier
                     .fillMaxWidth()
                     .padding(16.dp)
@@ -248,7 +257,7 @@ fun EditSiteDialog(website: Website, onEditWebsite: (website: Website) -> Unit, 
             Button(
                 enabled = isFormValid,
                 onClick = {
-                    onEditWebsite(Website(nameTextField.value.text, counterIdTextField.value.text.toLong(), 0))
+                    onEditWebsite(Website(nameTextField.value.text, counterIdTextField.value.text.toLong(), website.activity, website.pageViews))
                     onDismissRequest()
                 },
                 modifier = Modifier

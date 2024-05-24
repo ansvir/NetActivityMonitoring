@@ -1,18 +1,15 @@
 package com.example.nam.service
 
 import android.util.Log
-import com.example.nam.MainActivity
-import com.example.nam.storage.dto.MetricaCounterDto
+import com.example.nam.storage.TokenRepository
 import com.example.nam.storage.dto.MetricaCounterInfoDto
 import com.example.nam.storage.dto.MetricaCounterResponseDto
+import com.example.nam.storage.dto.MetricaPageViewsResponseDto
 import com.google.gson.Gson
-import com.google.gson.reflect.TypeToken
 import okhttp3.Call
 import okhttp3.Callback
-import okhttp3.MediaType.Companion.toMediaType
 import okhttp3.OkHttpClient
 import okhttp3.Request
-import okhttp3.RequestBody.Companion.toRequestBody
 import okhttp3.Response
 import java.io.IOException
 
@@ -22,10 +19,7 @@ class MetricaRestClient {
         const val YANDEX_METRICA_TAG = "[YANDEX-METRICA]"
         const val COUNTERS_REQUEST_URL = "https://api-metrika.yandex.net/management/v1/counters"
         const val COUNTER_REQUEST_URL = "https://api-metrika.yandex.net/management/v1/counter/"
-    }
-
-    fun createCounter(metricaCounterDto: MetricaCounterDto, handleResponse: () -> Unit, handleError: (Any) -> Unit) {
-        makeCreateCounterRequest(metricaCounterDto, handleResponse, handleError)
+        const val STAT_PAGE_VIEWS_ONE_WEEK_REQUEST_URL = "https://api-metrika.yandex.net/stat/v1/data?ids=%s&metrics=ym:s:visits"
     }
 
     fun getAllCountersInfo(handleResponse: (MetricaCounterInfoDto) -> Unit, handleError: (Any) -> Unit) {
@@ -33,37 +27,19 @@ class MetricaRestClient {
     }
 
     fun getCounterInfo(counterId: Long, handleResponse: (MetricaCounterResponseDto) -> Unit, handleError: (Any) -> Unit) {
-        makeCounterByIdRequest(COUNTER_REQUEST_URL + "$counterId", handleResponse, handleError)
+        makeCounterByIdRequest(counterId, handleResponse, handleError)
     }
 
-    private fun makeCreateCounterRequest(bodyObject: MetricaCounterDto, handleResponse: () -> Unit, handleError: (exception: IOException) -> Unit) {
-        val client = OkHttpClient()
-
-        val body = Gson().toJson(bodyObject).toRequestBody("application/json".toMediaType())
-
-        val request = Request.Builder()
-            .url(COUNTERS_REQUEST_URL)
-            .method("POST", body)
-            .addHeader("Authorization", "Bearer ${MainActivity.metricaToken}")
-            .build()
-
-        client.newCall(request).enqueue(object : Callback {
-            override fun onResponse(call: Call, response: Response) {
-                handleResponse()
-            }
-            override fun onFailure(call: Call, e: IOException) {
-                Log.w(YANDEX_METRICA_TAG, "Произошла ошибка запроса на создание счётчика! Подробности: ${e.message}")
-                handleError(e)
-            }
-        })
+    fun getOneWeekPageViewsByCounterId(counterId: Long, handleResponse: (MetricaPageViewsResponseDto) -> Unit, handleError: (Any) -> Unit) {
+        makeGetOneWeekPageViewsByCounterIdRequest(counterId, handleResponse, handleError)
     }
 
-    private fun makeCounterByIdRequest(url: String, handleResponse: (responseBody: MetricaCounterResponseDto) -> Unit, handleError: (exception: IOException) -> Unit) {
+    private fun makeCounterByIdRequest(counterId: Long, handleResponse: (responseBody: MetricaCounterResponseDto) -> Unit, handleError: (exception: IOException) -> Unit) {
         val client = OkHttpClient()
 
         val request = Request.Builder()
-            .url(url)
-            .addHeader("Authorization", "Bearer ${MainActivity.metricaToken}")
+            .url(COUNTER_REQUEST_URL + "$counterId")
+            .addHeader("Authorization", "Bearer ${TokenRepository.find()?.token}")
             .build()
 
         client.newCall(request).enqueue(object : Callback {
@@ -83,7 +59,7 @@ class MetricaRestClient {
 
         val request = Request.Builder()
             .url(COUNTERS_REQUEST_URL)
-            .addHeader("Authorization", "Bearer ${MainActivity.metricaToken}")
+            .addHeader("Authorization", "Bearer ${TokenRepository.find()?.token}")
             .build()
 
         client.newCall(request).enqueue(object : Callback {
@@ -103,4 +79,31 @@ class MetricaRestClient {
             }
         })
     }
+
+    private fun makeGetOneWeekPageViewsByCounterIdRequest(counterId: Long, handleResponse: (MetricaPageViewsResponseDto) -> Unit, handleError: (Any) -> Unit) {
+        val client = OkHttpClient()
+
+        val request = Request.Builder()
+            .url(String.format(STAT_PAGE_VIEWS_ONE_WEEK_REQUEST_URL, "$counterId"))
+            .addHeader("Authorization", "Bearer ${TokenRepository.find()?.token}")
+            .build()
+
+        client.newCall(request).enqueue(object : Callback {
+            override fun onResponse(call: Call, response: Response) {
+                val responseBody = response.body?.string()
+                val metricaCounterInfoDto = Gson().fromJson(responseBody, MetricaPageViewsResponseDto::class.java)
+                if (metricaCounterInfoDto.totals == null) {
+                    handleResponse(MetricaPageViewsResponseDto(0))
+                } else {
+                    handleResponse(metricaCounterInfoDto)
+                }
+            }
+
+            override fun onFailure(call: Call, e: IOException) {
+                Log.w(YANDEX_METRICA_TAG, "Произошла ошибка запроса посещаемости счётчика! Подробности: ${e.message}")
+                handleError(e)
+            }
+        })
+    }
+
 }
