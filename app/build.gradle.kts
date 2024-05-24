@@ -42,6 +42,12 @@ android {
     composeOptions {
         kotlinCompilerExtensionVersion = libs.versions.compose.compiler.get()
     }
+
+    packaging {
+        resources.excludes.add("META-INF/NOTICE.md")
+        resources.excludes.add("META-INF/LICENSE.md")
+    }
+
 }
 
 dependencies {
@@ -65,6 +71,9 @@ dependencies {
     implementation(libs.gson)
 
     implementation(libs.authsdk)
+
+    implementation(libs.android.mail)
+    implementation(libs.android.activation)
 
     implementation(libs.androidx.compose.foundation.layout)
     implementation(libs.androidx.compose.material3)

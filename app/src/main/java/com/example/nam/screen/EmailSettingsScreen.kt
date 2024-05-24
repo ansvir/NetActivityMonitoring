@@ -1,5 +1,6 @@
 package com.example.nam.screen
 
+import android.provider.ContactsContract.CommonDataKinds.Email
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -23,19 +24,20 @@ import androidx.compose.ui.unit.dp
 import com.example.nam.R
 import com.example.nam.storage.EmailRepository
 import com.example.nam.storage.dto.Setting
-import com.example.nam.storage.dto.Website
 
 @Composable
 fun EmailSettingsScreen(
     onNavUp: () -> Unit
 ) {
-    val smtpAccountField = remember { mutableStateOf(TextFieldValue("")) }
-    val smtpAccountPasswordField = remember { mutableStateOf(TextFieldValue("")) }
-    val smtpAccountDomainField = remember { mutableStateOf(TextFieldValue("")) }
-    val smtpAccountPortField = remember { mutableStateOf(TextFieldValue("")) }
-    val smtpAccountUseSslCheckbox = remember { mutableStateOf(false) }
-    val reportEmailField = remember { mutableStateOf(TextFieldValue("")) }
-    val smtpEmailFromTextField = remember { mutableStateOf(TextFieldValue("")) }
+    val email = remember { mutableStateOf(EmailRepository.find()) }
+
+    val smtpAccountField = remember { mutableStateOf(TextFieldValue(email.value?.smtpAccount?: "")) }
+    val smtpAccountPasswordField = remember { mutableStateOf(TextFieldValue(email.value?.smtpAccountPassword?: "")) }
+    val smtpAccountDomainField = remember { mutableStateOf(TextFieldValue(email.value?.smtpAccountDomain?: "")) }
+    val smtpAccountPortField = remember { mutableStateOf(TextFieldValue(email.value?.smtpAccountPort.toString()?: "")) }
+    val smtpAccountUseSslCheckbox = remember { mutableStateOf(email.value?.smtpAccountUseSsl?: true) }
+    val reportEmailField = remember { mutableStateOf(TextFieldValue(email.value?.reportEmail?: "")) }
+    val smtpEmailFromTextField = remember { mutableStateOf(TextFieldValue(email.value?.smtpEmailFromText?: "")) }
 
     Column(modifier = Modifier.padding(16.dp)) {
         Row(
@@ -176,14 +178,15 @@ fun EmailSettingsScreen(
         ){
             Button(
                 onClick = {
-                        EmailRepository.save(Setting(null,
+                        EmailRepository.save(Setting(
                             smtpAccount = smtpAccountField.value.text,
                             smtpAccountPassword = smtpAccountPasswordField.value.text,
                             smtpAccountDomain = smtpAccountDomainField.value.text,
                             smtpAccountPort = smtpAccountPortField.value.text.toInt(),
-                            smtpAccountUseSs = smtpAccountUseSslCheckbox.value,
+                            smtpAccountUseSsl = smtpAccountUseSslCheckbox.value,
                             reportEmail = reportEmailField.value.text,
                             smtpEmailFromText = smtpEmailFromTextField.value.text))
+                        onNavUp()
                     },
                 modifier = Modifier
                     .fillMaxWidth()

@@ -8,44 +8,20 @@ import com.google.gson.Gson
 object EmailRepository {
 
     private var preferencesManager: PreferencesManager =
-        PreferencesManager(MainActivity.self.baseContext, "EMAILS")
+        PreferencesManager(MainActivity.self.baseContext, "EMAIL")
 
-    fun findById(id: Int): Setting? {
-        val found = preferencesManager.getDataByKey(id.toString()) ?: return null
-        return fromJson(found)
-    }
+    private const val REPORT_KEY = "REPORT"
 
-    fun find(): List<Setting> {
-        return preferencesManager.getData<Setting>()
+    fun find(): Setting? {
+        return preferencesManager.getData<Setting>().firstOrNull()
     }
 
     fun save(setting: Setting) {
-        if (setting.id == null) {
-            val maxId = find().maxBy { it.id!! }
-            setting.id = maxId.id?.plus(1)
-        } else {
-            if (findById(setting.id!!) == null) {
-                preferencesManager.saveData(setting.id.toString(), toJson(setting))
-            } else {
-                CacheRepository.put(
-                    CacheRepository.CacheType.NOTIFICATION,
-                    "Настройка с таким id уже добавлена!"
-                )
-            }
-        }
-    }
-
-    fun edit(setting: Setting) {
-        val found = preferencesManager.getData<Setting>().find { it.id == setting.id }
-        if (found == null) {
-            return
-        } else {
-            preferencesManager.saveData(setting.id.toString(), toJson(setting))
-        }
+        preferencesManager.saveData(REPORT_KEY, toJson(setting))
     }
 
     fun delete(setting: Setting) {
-        preferencesManager.deleteData(setting.id.toString())
+        preferencesManager.deleteData(REPORT_KEY)
     }
 
     fun deleteAll() {

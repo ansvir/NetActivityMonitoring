@@ -6,6 +6,7 @@
 accompanist = "0.34.0"
 analytics = "6.5.0"
 androidGradlePlugin = "8.4.0"
+androidMail = "1.6.7"
 androidx-activity-compose = "1.9.0"
 androidx-appcompat = "1.6.1"
 androidx-benchmark = "1.2.0"
@@ -64,6 +65,8 @@ accompanist-permissions = { module = "com.google.accompanist:accompanist-permiss
 accompanist-swiperefresh = { module = "com.google.accompanist:accompanist-swiperefresh", version.ref = "accompanist" }
 accompanist-systemuicontroller = { module = "com.google.accompanist:accompanist-systemuicontroller", version.ref = "accompanist" }
 analytics = { module = "io.appmetrica.analytics:analytics", version.ref = "analytics" }
+android-activation = { module = "com.sun.mail:android-activation", version.ref = "androidMail" }
+android-mail = { module = "com.sun.mail:android-mail", version.ref = "androidMail" }
 androidx-activity-compose = { module = "androidx.activity:activity-compose", version.ref = "androidx-activity-compose" }
 androidx-activity-ktx = { module = "androidx.activity:activity-ktx", version.ref = "androidx-activity-compose" }
 androidx-appcompat = { module = "androidx.appcompat:appcompat", version.ref = "androidx-appcompat" }

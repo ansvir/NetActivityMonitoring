@@ -1,5 +1,6 @@
 package com.example.nam.screen
 
+import android.util.Log
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -16,12 +17,27 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import com.example.nam.R
+import com.example.nam.service.CsvReportService
+import com.example.nam.service.EmailService
+import com.example.nam.service.EmailService.EMAIL_TAG
 import com.example.nam.storage.CacheRepository
+import com.example.nam.storage.EmailRepository
 import com.example.nam.storage.WebsiteRepository
 import com.example.nam.storage.WebsiteService
+import com.example.nam.storage.dto.Setting
 import com.example.nam.storage.dto.Website
-import com.google.gson.Gson
-import com.google.gson.reflect.TypeToken
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
+import java.util.Properties
+import javax.mail.Authenticator
+import javax.mail.Message
+import javax.mail.PasswordAuthentication
+import javax.mail.Session
+import javax.mail.Transport
+import javax.mail.internet.InternetAddress
+import javax.mail.internet.MimeMessage
 
 @Composable
 fun WebsitesScreen() {
@@ -48,7 +64,9 @@ fun WebsitesScreen() {
 
         Button(
             modifier = Modifier.align(Alignment.CenterHorizontally),
-            onClick = { sendWebsitesToEmail(allWebsites) },
+            onClick = { CoroutineScope(Dispatchers.IO).launch {
+                sendReport(allWebsites)
+            }  },
             shape = RoundedCornerShape(0.dp)
         ) {
             Text(text = stringResource(id = R.string.send_to_email))
@@ -56,6 +74,14 @@ fun WebsitesScreen() {
     }
 }
 
-private fun sendWebsitesToEmail(websites: List<Website>) {
-
+private suspend fun sendReport(websites: List<Website>) {
+    val setting = EmailRepository.find()
+    if (setting == null) {
+        Log.w(EMAIL_TAG, "Ошибка отправки отчёта, нет сохраненных настроек SMTP-сервера")
+        CacheRepository.put(CacheRepository.CacheType.NOTIFICATION, "Перед отправлением отчёта сохраните настройки SMPT-сервера!")
+        return
+    }
+    CsvReportService.generateWebsitesCsvReport(websites) {
+        CoroutineScope(Dispatchers.IO).launch { EmailService.sendEmail(setting, it) }
+    }
 }
