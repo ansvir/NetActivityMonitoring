@@ -21,7 +21,7 @@ class MetricaRestClient {
         const val COUNTERS_REQUEST_URL = "https://api-metrika.yandex.net/management/v1/counters"
         const val COUNTER_REQUEST_URL = "https://api-metrika.yandex.net/management/v1/counter/"
         const val STAT_PAGE_VIEWS_ONE_WEEK_REQUEST_URL =
-            "https://api-metrika.yandex.net/stat/v1/data?ids=%s&metrics=ym:s:visits"
+            "https://api-metrika.yandex.net/stat/v1/data?ids=%s&metrics=ym:s:users"
     }
 
     fun getAllCountersInfo(

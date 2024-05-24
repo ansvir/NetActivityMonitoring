@@ -47,9 +47,10 @@ object CsvReportService {
 
     private fun buildCsvFile(websites: List<Website>): String {
         val sb = StringBuilder()
+        sb.append("Сайт;Количество посещений${System.lineSeparator()}")
         for (website in websites) {
             sb.append(
-                "${website.name};${website.activity}${System.lineSeparator()}"
+                "${website.name};${website.pageViews}${System.lineSeparator()}"
             )
         }
         return sb.toString()
