@@ -16,8 +16,11 @@ import androidx.compose.material3.Card
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextField
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.derivedStateOf
+import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
@@ -27,6 +30,8 @@ import androidx.compose.ui.window.Dialog
 import com.example.nam.R
 import com.example.nam.storage.WebsiteRepository
 import com.example.nam.storage.dto.Website
+import com.example.nam.vaidation.DomainValidator
+import com.example.nam.vaidation.IntegerValidator
 
 @Composable
 fun WebsiteSettingsScreen(
@@ -71,7 +76,8 @@ fun WebsiteSettingsScreen(
             ) {
                 website.name?.let { Text(text = it) }
                 Button(
-                    onClick = { currentWebsite.value = website },
+                    onClick = { currentWebsite.value = website
+                              showEditDialog.value = true },
                     shape = RoundedCornerShape(0.dp)
                 ) {
                     Text(text = stringResource(id = R.string.edit))
@@ -106,6 +112,15 @@ fun AddSiteDialog(onAddWebsite: (website: Website) -> Unit, onDismissRequest: ()
     val nameTextField = remember { mutableStateOf(TextFieldValue("")) }
     val counterIdTextField = remember { mutableStateOf(TextFieldValue("")) }
 
+    var domainError by remember { mutableStateOf<String?>(null) }
+    var counterIdError by remember { mutableStateOf<String?>(null) }
+
+    val isFormValid by remember {
+        derivedStateOf {
+            domainError == null && counterIdError == null
+        }
+    }
+
     Dialog(onDismissRequest = { onDismissRequest() }) {
         Card(
             modifier = Modifier
@@ -119,22 +134,28 @@ fun AddSiteDialog(onAddWebsite: (website: Website) -> Unit, onDismissRequest: ()
                 value = nameTextField.value,
                 onValueChange = {
                     nameTextField.value = it
+                    domainError = DomainValidator.isValid(nameTextField.value.text)
                 },
                 placeholder = {
                     Text(text = stringResource(id = R.string.website_domain_name))
-                }
+                },
+                isError = domainError != null
             )
+            domainError?.let { Text(it) }
             Spacer(modifier = Modifier.height(8.dp))
             TextField(
                 modifier = Modifier.padding(16.dp),
                 value = counterIdTextField.value,
                 onValueChange = {
                     counterIdTextField.value = it
+                    counterIdError = IntegerValidator.isValid(counterIdTextField.value.text)
                 },
                 placeholder = {
                     Text(text = stringResource(id = R.string.website_counter_id))
-                }
+                },
+                isError = counterIdError != null
             )
+            counterIdError?.let { Text(it) }
             Spacer(modifier = Modifier.height(8.dp))
             Button(
                 onClick = { onDismissRequest() },
@@ -147,6 +168,7 @@ fun AddSiteDialog(onAddWebsite: (website: Website) -> Unit, onDismissRequest: ()
                 )
             }
             Button(
+                enabled = isFormValid,
                 onClick = {
                     onAddWebsite(Website(nameTextField.value.text, counterIdTextField.value.text.toLong(), 0))
                     onDismissRequest()
@@ -165,9 +187,17 @@ fun AddSiteDialog(onAddWebsite: (website: Website) -> Unit, onDismissRequest: ()
 
 @Composable
 fun EditSiteDialog(website: Website, onEditWebsite: (website: Website) -> Unit, onDismissRequest: () -> Unit) {
-    val websiteCopy = remember { mutableStateOf(website) }
-    val nameTextField = remember { mutableStateOf(TextFieldValue("")) }
-    val counterIdTextField = remember { mutableStateOf(TextFieldValue("")) }
+    val nameTextField = remember { mutableStateOf(TextFieldValue(website.name ?: "")) }
+    val counterIdTextField = remember { mutableStateOf(TextFieldValue(website.counterId.toString())) }
+
+    var domainError by remember { mutableStateOf<String?>(null) }
+    var counterIdError by remember { mutableStateOf<String?>(null) }
+
+    val isFormValid by remember {
+        derivedStateOf {
+            domainError == null && counterIdError == null
+        }
+    }
 
     Dialog(onDismissRequest = { onDismissRequest() }) {
         Card(
@@ -182,16 +212,28 @@ fun EditSiteDialog(website: Website, onEditWebsite: (website: Website) -> Unit, 
                 value = nameTextField.value,
                 onValueChange = {
                     nameTextField.value = it
-                }
+                    domainError = DomainValidator.isValid(nameTextField.value.text)
+                },
+                placeholder = {
+                    Text(text = stringResource(id = R.string.website_domain_name))
+                },
+                isError = domainError != null
             )
+            domainError?.let { Text(it) }
             Spacer(modifier = Modifier.height(8.dp))
             TextField(
                 modifier = Modifier.padding(16.dp),
                 value = counterIdTextField.value,
                 onValueChange = {
                     counterIdTextField.value = it
-                }
+                    counterIdError = IntegerValidator.isValid(counterIdTextField.value.text)
+                },
+                placeholder = {
+                    Text(text = stringResource(id = R.string.website_counter_id))
+                },
+                isError = counterIdError != null
             )
+            counterIdError?.let { Text(it) }
             Spacer(modifier = Modifier.height(8.dp))
             Button(
                 onClick = { onDismissRequest() },
@@ -204,10 +246,11 @@ fun EditSiteDialog(website: Website, onEditWebsite: (website: Website) -> Unit, 
                 )
             }
             Button(
+                enabled = isFormValid,
                 onClick = {
-                    websiteCopy.value.name = nameTextField.value.text
-                    websiteCopy.value.counterId = counterIdTextField.value.text.toLong()
-                    onEditWebsite(websiteCopy.value) },
+                    onEditWebsite(Website(nameTextField.value.text, counterIdTextField.value.text.toLong(), 0))
+                    onDismissRequest()
+                },
                 modifier = Modifier
                     .fillMaxWidth()
                     .padding(16.dp)

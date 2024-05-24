@@ -1,6 +1,5 @@
 package com.example.nam.screen
 
-import android.provider.ContactsContract.CommonDataKinds.Email
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -14,8 +13,11 @@ import androidx.compose.material3.Checkbox
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextField
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.derivedStateOf
+import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
@@ -24,11 +26,33 @@ import androidx.compose.ui.unit.dp
 import com.example.nam.R
 import com.example.nam.storage.EmailRepository
 import com.example.nam.storage.dto.Setting
+import com.example.nam.vaidation.DomainValidator
+import com.example.nam.vaidation.EmailValidator
+import com.example.nam.vaidation.IntegerValidator
+import com.example.nam.vaidation.LengthValidator
 
 @Composable
 fun EmailSettingsScreen(
     onNavUp: () -> Unit
 ) {
+
+    var smtpAccountError by remember { mutableStateOf<String?>(null) }
+    var smtpAccountPasswordError by remember { mutableStateOf<String?>(null) }
+    var smtpAccountDomainError by remember { mutableStateOf<String?>(null) }
+    var smtpAccountPortError by remember { mutableStateOf<String?>(null) }
+    var reportEmailError by remember { mutableStateOf<String?>(null) }
+    var smtpEmailFromTextError by remember { mutableStateOf<String?>(null) }
+
+    val isFormValid by remember {
+        derivedStateOf {
+            smtpAccountError == null && smtpAccountPasswordError == null
+                    && smtpAccountDomainError == null
+                    && smtpAccountPortError == null
+                    && reportEmailError == null
+                    && smtpEmailFromTextError == null
+        }
+    }
+
     val email = remember { mutableStateOf(EmailRepository.find()) }
 
     val smtpAccountField = remember { mutableStateOf(TextFieldValue(email.value?.smtpAccount?: "")) }
@@ -70,11 +94,14 @@ fun EmailSettingsScreen(
                 value = smtpAccountField.value,
                 onValueChange = {
                     smtpAccountField.value = it
+                    smtpAccountError = EmailValidator.isValid(smtpAccountField.value.text)
                 },
                 placeholder = {
                     Text(text = stringResource(id = R.string.smtp_account))
-                }
+                },
+                isError = smtpAccountError != null
             )
+            smtpAccountError?.let { Text(text = it) }
         }
         Spacer(modifier = Modifier.height(8.dp))
         Row(
@@ -86,11 +113,14 @@ fun EmailSettingsScreen(
                 value = smtpAccountPasswordField.value,
                 onValueChange = {
                     smtpAccountPasswordField.value = it
+                    smtpAccountPasswordError = LengthValidator.isValid(smtpAccountPasswordField.value.text, 19)
                 },
                 placeholder = {
                     Text(text = stringResource(id = R.string.smtp_account_password))
-                }
+                },
+                isError = smtpAccountPasswordError != null
             )
+            smtpAccountPasswordError?.let { Text(text = it) }
         }
         Spacer(modifier = Modifier.height(8.dp))
         Row(
@@ -102,11 +132,14 @@ fun EmailSettingsScreen(
                 value = smtpAccountDomainField.value,
                 onValueChange = {
                     smtpAccountDomainField.value = it
+                    smtpAccountDomainError = DomainValidator.isValid(smtpAccountDomainField.value.text)
                 },
                 placeholder = {
                     Text(text = stringResource(id = R.string.smtp_account_domain))
-                }
+                },
+                isError = smtpAccountDomainError != null
             )
+            smtpAccountDomainError?.let { Text(text = it) }
         }
         Spacer(modifier = Modifier.height(8.dp))
         Row(
@@ -118,11 +151,14 @@ fun EmailSettingsScreen(
                 value = smtpAccountPortField.value,
                 onValueChange = {
                     smtpAccountPortField.value = it
+                    smtpAccountPortError = IntegerValidator.isValid(smtpAccountPortField.value.text)
                 },
                 placeholder = {
                     Text(text = stringResource(id = R.string.smtp_account_port))
-                }
+                },
+                isError = smtpAccountPortError != null
             )
+            smtpAccountPortError?.let { Text(text = it) }
         }
         Spacer(modifier = Modifier.height(8.dp))
         Row(
@@ -148,11 +184,14 @@ fun EmailSettingsScreen(
                 value = reportEmailField.value,
                 onValueChange = {
                     reportEmailField.value = it
+                    reportEmailError = EmailValidator.isValid(reportEmailField.value.text)
                 },
                 placeholder = {
                     Text(text = stringResource(id = R.string.report_email))
-                }
+                },
+                isError = reportEmailError != null
             )
+            reportEmailError?.let { Text(text = it) }
         }
         Spacer(modifier = Modifier.height(8.dp))
         Row(
@@ -164,11 +203,14 @@ fun EmailSettingsScreen(
                 value = smtpEmailFromTextField.value,
                 onValueChange = {
                     smtpEmailFromTextField.value = it
+                    smtpEmailFromTextError = EmailValidator.isValid(smtpEmailFromTextField.value.text)
                 },
                 placeholder = {
                     Text(text = stringResource(id = R.string.smtp_email_from_text))
-                }
+                },
+                isError = smtpEmailFromTextError != null
             )
+            smtpEmailFromTextError?.let { Text(text = it) }
         }
         Spacer(modifier = Modifier.height(8.dp))
         Row (
@@ -177,6 +219,7 @@ fun EmailSettingsScreen(
             verticalAlignment = Alignment.CenterVertically
         ){
             Button(
+                enabled = isFormValid,
                 onClick = {
                         EmailRepository.save(Setting(
                             smtpAccount = smtpAccountField.value.text,
