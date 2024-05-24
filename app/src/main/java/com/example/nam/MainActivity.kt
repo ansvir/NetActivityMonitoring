@@ -41,7 +41,6 @@ class MainActivity : AppCompatActivity() {
         enableEdgeToEdge()
         super.onCreate(savedInstanceState)
         self = this
-        WebsiteRepository.deleteAll()
         handleToken()
         setContent {
             AppTheme {
