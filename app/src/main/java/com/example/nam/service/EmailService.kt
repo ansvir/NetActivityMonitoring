@@ -1,7 +1,7 @@
 package com.example.nam.service
 
 import android.util.Log
-import com.example.nam.storage.CacheRepository
+import com.example.nam.storage.ErrorViewModel
 import com.example.nam.storage.dto.Setting
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
@@ -25,7 +25,8 @@ object EmailService {
 
     suspend fun sendEmail(
         setting: Setting,
-        attachmentFile: File
+        attachmentFile: File,
+        errorViewModel: ErrorViewModel
     ) {
         withContext(Dispatchers.IO) {
             try {
@@ -61,7 +62,7 @@ object EmailService {
                 Transport.send(message)
                 Log.d(EMAIL_TAG, "E-mail сообщение отправлено успешно")
             } catch (e: Exception) {
-                CacheRepository.put(CacheRepository.CacheType.NOTIFICATION, "Ошибка отправки e-mail сообщения!")
+                errorViewModel.setErrorMessage("Ошибка отправки e-mail сообщения!")
                 Log.e(EMAIL_TAG, "Ошибка отправки e-mail сообщения, подробности: ${e.message}")
             }
         }

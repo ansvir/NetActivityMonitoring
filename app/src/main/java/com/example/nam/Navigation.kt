@@ -1,24 +1,29 @@
 package com.example.nam
 
+import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Button
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
+import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
@@ -31,7 +36,7 @@ import com.example.nam.screen.EmailSettingsScreen
 import com.example.nam.screen.SettingsScreen
 import com.example.nam.screen.WebsitesRoute
 import com.example.nam.screen.WebsitesSettingsRoute
-import com.example.nam.storage.CacheRepository
+import com.example.nam.storage.ErrorViewModel
 
 object Destinations {
     const val WEBSITES_ROUTE = "websites"
@@ -42,16 +47,19 @@ object Destinations {
 
 @Composable
 fun AppNavHost(
-    navController: NavHostController = rememberNavController()
+    navController: NavHostController = rememberNavController(),
+    errorViewModel: ErrorViewModel = viewModel(modelClass = ErrorViewModel::class.java)
 ) {
-    MainLayout(navController = navController)
+    MainLayout(navController = navController, errorViewModel = errorViewModel)
 }
 
 @Composable
-fun MainLayout(navController: NavHostController) {
-    val notification = CacheRepository.get(CacheRepository.CacheType.NOTIFICATION)
+fun MainLayout(
+    navController: NavHostController,
+    errorViewModel: ErrorViewModel
+) {
 
-    val notificationText by rememberSaveable { mutableStateOf(notification) }
+    val errorText by errorViewModel.errorMessage.collectAsState()
 
     Column(
         modifier = Modifier
@@ -80,13 +88,20 @@ fun MainLayout(navController: NavHostController) {
         }
     }
 
-    Box(
-        modifier = Modifier
-            .fillMaxWidth()
-            .height(48.dp)
-            .padding(16.dp)
-    ) {
-        Text(text = notificationText ?: "")
+    if (errorViewModel.errorMessage.collectAsState().value != null) {
+        Box(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(16.dp)
+                .background(MaterialTheme.colorScheme.error)
+                .clickable { errorViewModel.clearErrorMessage() }
+        ) {
+            Text(
+                text = errorText ?: "",
+                color = Color(Color.White.value),
+                modifier = Modifier.padding(16.dp)
+            )
+        }
     }
 
     Box(
@@ -100,7 +115,7 @@ fun MainLayout(navController: NavHostController) {
         ) {
 
             composable(WEBSITES_ROUTE) {
-                WebsitesRoute()
+                WebsitesRoute(errorViewModel)
             }
 
             composable(SETTINGS_ROUTE) {
@@ -117,6 +132,7 @@ fun MainLayout(navController: NavHostController) {
             composable(WEBSITES_SETTINGS_ROUTE) {
                 WebsitesSettingsRoute(
                     onNavUp = navController::navigateUp,
+                    errorViewModel = errorViewModel
                 )
             }
 

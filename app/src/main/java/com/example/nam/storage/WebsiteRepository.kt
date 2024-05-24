@@ -22,11 +22,11 @@ object WebsiteRepository {
         return preferencesManager.getData<Website>().find { it.counterId == id }
     }
 
-    fun save(website: Website) {
+    fun save(website: Website, errorViewModel: ErrorViewModel) {
         if (website.name?.let { findByName(it) } == null) {
             website.name?.let { preferencesManager.saveData(it, toJson(website)) }
         } else {
-            CacheRepository.put(CacheRepository.CacheType.NOTIFICATION, "Сайт с таким именем уже добавлен!")
+            errorViewModel.setErrorMessage("Сайт с таким именем уже добавлен!")
         }
     }
 

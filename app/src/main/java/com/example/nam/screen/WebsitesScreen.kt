@@ -20,27 +20,17 @@ import com.example.nam.R
 import com.example.nam.service.CsvReportService
 import com.example.nam.service.EmailService
 import com.example.nam.service.EmailService.EMAIL_TAG
-import com.example.nam.storage.CacheRepository
 import com.example.nam.storage.EmailRepository
+import com.example.nam.storage.ErrorViewModel
 import com.example.nam.storage.WebsiteRepository
 import com.example.nam.storage.WebsiteService
-import com.example.nam.storage.dto.Setting
 import com.example.nam.storage.dto.Website
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
-import kotlinx.coroutines.withContext
-import java.util.Properties
-import javax.mail.Authenticator
-import javax.mail.Message
-import javax.mail.PasswordAuthentication
-import javax.mail.Session
-import javax.mail.Transport
-import javax.mail.internet.InternetAddress
-import javax.mail.internet.MimeMessage
 
 @Composable
-fun WebsitesScreen() {
+fun WebsitesScreen(errorViewModel: ErrorViewModel) {
     val allWebsites = WebsiteRepository.find()
     Column(modifier = Modifier.padding(16.dp)) {
         allWebsites.forEach { website ->
@@ -51,7 +41,7 @@ fun WebsitesScreen() {
             ) {
                 website.name?.let { Text(text = it) }
                 Button(
-                    onClick = { WebsiteService.getByCounterId(website.counterId) },
+                    onClick = { WebsiteService.getByCounterId(website.counterId, errorViewModel) },
                     shape = RoundedCornerShape(0.dp)
                 ) {
                     Text(text = stringResource(id = R.string.retrieve))
@@ -65,7 +55,7 @@ fun WebsitesScreen() {
         Button(
             modifier = Modifier.align(Alignment.CenterHorizontally),
             onClick = { CoroutineScope(Dispatchers.IO).launch {
-                sendReport(allWebsites)
+                sendReport(allWebsites, errorViewModel)
             }  },
             shape = RoundedCornerShape(0.dp)
         ) {
@@ -74,14 +64,14 @@ fun WebsitesScreen() {
     }
 }
 
-private suspend fun sendReport(websites: List<Website>) {
+private suspend fun sendReport(websites: List<Website>, errorViewModel: ErrorViewModel) {
     val setting = EmailRepository.find()
     if (setting == null) {
         Log.w(EMAIL_TAG, "Ошибка отправки отчёта, нет сохраненных настроек SMTP-сервера")
-        CacheRepository.put(CacheRepository.CacheType.NOTIFICATION, "Перед отправлением отчёта сохраните настройки SMPT-сервера!")
+        errorViewModel.setErrorMessage("Перед отправлением отчёта сохраните настройки SMPT-сервера!")
         return
     }
-    CsvReportService.generateWebsitesCsvReport(websites) {
-        CoroutineScope(Dispatchers.IO).launch { EmailService.sendEmail(setting, it) }
+    CsvReportService.generateWebsitesCsvReport(websites, errorViewModel) {
+        CoroutineScope(Dispatchers.IO).launch { EmailService.sendEmail(setting, it, errorViewModel) }
     }
 }

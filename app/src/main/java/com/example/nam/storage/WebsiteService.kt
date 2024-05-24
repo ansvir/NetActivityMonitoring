@@ -15,7 +15,7 @@ object WebsiteService {
         // todo
     }
 
-    fun addWebsite(website: Website) {
+    fun addWebsite(website: Website, errorViewModel: ErrorViewModel) {
         MetricaRestClient().createCounter(
             MetricaCounterDto(
                 MetricaCounterRequestDto(
@@ -24,15 +24,15 @@ object WebsiteService {
                 )
             ),
             {
-                WebsiteRepository.save(website)
+                WebsiteRepository.save(website, errorViewModel)
                 Log.d(YANDEX_METRICA_TAG, "Счетчик успешно создан")
             },
             {
-                CacheRepository.put(CacheRepository.CacheType.NOTIFICATION, it.toString())
+                errorViewModel.setErrorMessage(it.toString())
             })
     }
 
-    fun getAllWebsites() {
+    fun getAllWebsites(errorViewModel: ErrorViewModel) {
         MetricaRestClient().getAllCountersInfo({ counters ->
             val websites = ArrayList<Website>()
             counters.counters?.map {
@@ -45,14 +45,11 @@ object WebsiteService {
             WebsiteRepository.saveAll(websites)
         },
             {
-                CacheRepository.put(
-                    CacheRepository.CacheType.NOTIFICATION,
-                    it.toString()
-                )
+                errorViewModel.setErrorMessage(it.toString())
             })
     }
 
-    fun getByCounterId(counterId: Long) {
+    fun getByCounterId(counterId: Long, errorViewModel: ErrorViewModel) {
         MetricaRestClient().getCounterInfo(counterId, {
             val found = WebsiteRepository.findByCounterId(counterId)
             if (found != null) {
@@ -64,10 +61,7 @@ object WebsiteService {
             }
         },
             {
-                CacheRepository.put(
-                    CacheRepository.CacheType.NOTIFICATION,
-                    it.toString()
-                )
+                errorViewModel.setErrorMessage(it.toString())
             })
     }
 

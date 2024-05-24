@@ -12,16 +12,11 @@ import androidx.compose.material3.Button
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.Text
 import androidx.compose.runtime.MutableState
-import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
-import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import com.example.nam.screen.MainScreen
 import com.example.nam.service.MetricaRestClient.Companion.YANDEX_METRICA_TAG
-import com.example.nam.storage.CacheRepository
-import com.example.nam.storage.WebsiteService
 import com.example.nam.theme.AppTheme
 import com.yandex.authsdk.YandexAuthLoginOptions
 import com.yandex.authsdk.YandexAuthOptions
@@ -86,12 +81,10 @@ class MainActivity : AppCompatActivity() {
                     is YandexAuthResult.Success -> {
                         Log.d(YANDEX_METRICA_TAG, "Подключение успешно");
                         metricaToken = sdk.getJwt(result.token).replace("\n", "")
-                        WebsiteService.getAllWebsites()
                         tokenState.value = TokenState.SUCCESS
                     }
                     is YandexAuthResult.Failure -> {
                         Log.e(YANDEX_METRICA_TAG, "Ошибка подключения! Подробности: ${result.exception}")
-                        CacheRepository.put(CacheRepository.CacheType.NOTIFICATION, result.exception.toString())
                         tokenState.value = TokenState.FAILURE
                     }
                     YandexAuthResult.Cancelled -> {
