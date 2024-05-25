@@ -3,7 +3,9 @@ package com.example.nam.service
 import android.util.Log
 import com.example.nam.storage.ErrorViewModel
 import com.example.nam.storage.dto.Setting
+import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import java.io.File
 import java.util.Properties
@@ -23,12 +25,12 @@ object EmailService {
 
     const val EMAIL_TAG = "[EMAIL-SENDER]"
 
-    suspend fun sendEmail(
+    fun sendEmail(
         setting: Setting,
         attachmentFile: File,
         errorViewModel: ErrorViewModel
     ) {
-        withContext(Dispatchers.IO) {
+        CoroutineScope(Dispatchers.IO).launch {
             try {
                 val properties = Properties()
                 properties["mail.smtp.host"] = setting.smtpAccountDomain

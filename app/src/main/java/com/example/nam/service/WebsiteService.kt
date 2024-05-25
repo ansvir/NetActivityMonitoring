@@ -71,19 +71,19 @@ object WebsiteService {
                 }
                 found.activity = it.activity_status
                 MetricaRestClient().getOneWeekPageViewsByCounterId(
-                    it.id.toLong(),
+                    found.counterId,
                     { pageViewsResponse ->
                         if (pageViewsResponse.totals == null) {
                             Log.w(YANDEX_METRICA_TAG, "Ошибка получения посещений сайта")
                         } else {
                             found.pageViews = pageViewsResponse.totals
+                            WebsiteRepository.edit(found)
                         }
                     },
                     {
                         Log.e(YANDEX_METRICA_TAG, "Ошибка получения посещений сайта")
                         errorViewModel.setErrorMessage("Ошибка получения количества посещений сайта ${found.name}")
                     })
-                WebsiteRepository.edit(found)
             }
         },
             {

@@ -79,6 +79,12 @@ fun WebsiteSettingsScreen(
             ) {
                 website.name?.let { Text(text = it) }
                 Button(
+                    onClick = { WebsiteRepository.delete(website) },
+                    shape = RoundedCornerShape(0.dp)
+                ) {
+                    Text(text = stringResource(id = R.string.delete))
+                }
+                Button(
                     onClick = { currentWebsite.value = website
                               showEditDialog.value = true },
                     shape = RoundedCornerShape(0.dp)

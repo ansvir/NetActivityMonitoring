@@ -21,6 +21,7 @@
     <string name="settings">Настройки</string>
     <string name="retrieve">Получить</string>
     <string name="edit">Изменить</string>
+    <string name="delete">X</string>
     <string name="add_new">Добавить новый</string>
     <string name="cancel">Отмена</string>
     <string name="save">Сохранить</string>

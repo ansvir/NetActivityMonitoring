@@ -113,7 +113,7 @@ fun EmailSettingsScreen(
                 value = smtpAccountPasswordField.value,
                 onValueChange = {
                     smtpAccountPasswordField.value = it
-                    smtpAccountPasswordError = LengthValidator.isValid(smtpAccountPasswordField.value.text, 19)
+                    smtpAccountPasswordError = LengthValidator.isValid(smtpAccountPasswordField.value.text, 2, 19)
                 },
                 placeholder = {
                     Text(text = stringResource(id = R.string.smtp_account_password))

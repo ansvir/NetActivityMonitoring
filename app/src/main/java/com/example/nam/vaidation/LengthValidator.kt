@@ -10,4 +10,12 @@ object LengthValidator {
         }
     }
 
+    fun isValid(text: String, lengthMin: Int, lengthMax: Int): String? {
+        return if (text.length in lengthMin..lengthMax) {
+            null
+        } else {
+            "Неверная длина строки."
+        }
+    }
+
 }
